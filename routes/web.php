@@ -61,6 +61,15 @@ Route::get('new_employee/profile/{worker}', [WorkerController::class, 'profile']
 Route::post('new_employee/allemployee', [WorkerController::class, 'allemployee'])
     ->name('view.allemployee');
 
+Route::get('new_employee/allemployee', [WorkerController::class, 'allemployee'])
+    ->name('view.allemployee');
+
+Route::put('/workers/{employee_id}', [WorkerController::class, 'update'])
+    ->name('workers.update');
+
+Route::delete('/workers/{employee_id}', [WorkerController::class, 'destroy'])
+    ->name('workers.destroy');    
+
 Route::post('new_employee/logout', [WorkerController::class, 'logout'])
     ->name('new_employee.logout');
 

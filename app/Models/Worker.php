@@ -30,6 +30,16 @@ class Worker extends Authenticatable
         'working_period_end' => 'date',
     ];
 
+    protected $primaryKey = 'employee_id';
+    public $incrementing = false;
+    protected $keyType = 'int';
+
+    // Route model binding used employee_id
+    public function getRouteKeyName()
+    {
+        return 'employee_id';
+    }
+
 
     // 🔒 Mutator otomatis untuk hash password
     public function setPasswordAttribute($value)

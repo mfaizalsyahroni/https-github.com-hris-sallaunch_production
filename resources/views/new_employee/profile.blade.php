@@ -13,6 +13,9 @@
 
                 <h4 class="fw-bold text-center mb-4">
                     Employee Profile
+                    <div>
+                        <i class="bi bi-person-circle"></i>
+                    </div>
                 </h4>
 
                 <ul class="list-group list-group-flush">

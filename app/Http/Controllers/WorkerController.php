@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Controllers\Controller;
 use App\Models\Worker;
 use Illuminate\Http\Request;
@@ -72,7 +73,7 @@ class WorkerController extends Controller
         $worker = Worker::create($validated);
 
         return redirect()
-            ->route('new_employee.profile', $worker->id)
+            ->route('new_employee.profile', $worker->employee_id)
             ->with('success', 'Worker created successfully.');
     }
 
@@ -86,6 +87,60 @@ class WorkerController extends Controller
         $worker = Worker::orderBy('employee_id', 'asc')->get();
         // $worker = Worker::latest()->get(); (off)
         return view('new_employee.allemployee', compact('worker'));
+    }
+
+
+    // public function update(Request $request, Worker $worker)
+    // {
+    //     $validated = $request->validate([
+    //         'fullname' => 'required|string|max:255',
+    //         'role' => 'required|string|max:255',
+    //         'employment_type' => 'required|in:permanent,contract,intern,probation,freelance',
+    //         'working_period_start' => 'required|date',
+    //         'password' => 'nullable|min:2|confirmed',
+    //     ]);
+
+    //     if (empty($validated['password'])) {
+    //         unset($validated['password']);
+    //     }
+
+    //     $worker->update($validated);
+
+    //     return back()->with('success', 'Employee updated successfully');
+    // }
+
+
+    public function update(Request $request, $id)
+    {
+        $employee = Worker::findOrFail($id);
+
+        $data = [
+            'fullname' => $request->fullname,
+            'role' => $request->role,
+            'employment_type' => $request->employment_type,
+        ];
+
+        // hanya update jika diisi
+        if ($request->filled('working_period_start')) {
+            $data['working_period_start'] = $request->working_period_start;
+        }
+
+        $employee->update($data);
+
+        if ($request->filled('password')) {
+            $employee->password = bcrypt($request->password);
+            $employee->save();
+        }
+
+        return redirect()->route('view.allemployee')
+            ->with('success', 'Employee updated successfully ✅.');
+    }
+    public function destroy(Request $request, $employee_id)
+    {
+        $worker = Worker::where('employee_id', $employee_id)->firstOrFail();
+        $worker->delete();
+
+        return back()->with('success', 'Employee deleted successfully ✅.');
     }
 
     public function logout(Request $request)
@@ -102,22 +157,6 @@ class WorkerController extends Controller
     {
 
     }
-    // public function login(Request $request)
-    // {
-    //     $request->validate([
-    //         'employee_id' => 'required',
-    //         'password' => 'required',
-    //     ]);
-
-    //     $worker = Worker::where('employee_id', $request->employee_id)->first();
-
-    //     if ($worker && Hash::check($request->password, $worker->password)) {
-    //         // Password valid
-    //         return response()->json(['message' => 'Login successful']);
-    //     } else {
-    //         return response()->json(['message' => 'Invalid credentials'], 401);
-    //     }
-    // }
 
 
 }
