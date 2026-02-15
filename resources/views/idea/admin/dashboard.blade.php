@@ -1,84 +1,146 @@
-@extends('layouts.app')
+@extends('layouts.ideastaff')
 
 @section('content')
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+@php
+    $totalIdeas = $ideas->count();
+    $draft = $ideas->where('status','draft')->count();
+    $voting = $ideas->where('status','voting')->count();
+    $reviewed = $ideas->where('status','reviewed')->count();
+@endphp
 
+<div class="container py-4">
 
-<h2>Admin Dashboard</h2>
+    <h2 class="fw-bold mb-4">
+        🏢 Admin Innovation Dashboard
+    </h2>
 
-@foreach($ideas as $idea)
-    <table class="table table-bordered table-striped align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Module Name</th>
-                <th>Category</th>
-                <th>YouTube ID</th>
-                <th>Duration</th>
-                <th>Description</th>
-                <th>Actions</th>
-                <th>Feedback</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($modules as $module)
-            <tr>
-                <td>{{ $module->id }}</td>
-                <td>{{ $module->module_name }}</td>
-                <td>{{ $module->category }}</td>
-                <td>{{ $module->youtube_id }}</td>
-                <td>{{ $module->duration }}</td>
-                <td>{{ $module->description }}</td>
-                <td>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 edit-btn"
-                            data-id="{{ $module->id }}"
-                            data-name="{{ $module->module_name }}"
-                            data-category="{{ $module->category }}"
-                            data-youtube="{{ $module->youtube_id }}"
-                            data-duration="{{ $module->duration }}"
-                            data-description="{{ $module->description }}">
-                            <i class="bi bi-pencil"></i>
-                            <span>Edit</span>
-                        </button>
-    
-                        <form method="POST" action="{{ route('learningplan.admin.delete', $module->id) }}"
-                            onsubmit="return confirm('Are you sure?')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger d-flex align-items-center gap-1">
-                                <i class="bi bi-trash3"></i>
-                                <span>Delete</span>
-                            </button>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    @php
-                        $feedback = \App\Models\LearningProgress::where('module_id', $module->id)
-                            ->latest()
-                            ->first();
-                    @endphp
-    
-                    @if ($feedback)
-                        <a href="{{ asset('storage/' . $feedback->feedback_video) }}"
-                            target="_blank"
-                            class="btn btn-sm btn-success d-flex align-items-center gap-1">
-                            <i class="bi bi-play-circle"></i>
-                            <span>View</span>
-                        </a>
-                    @else
-                        <span class="text-muted">No Feedback</span>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    
-@endforeach
+    {{-- EXECUTIVE SUMMARY --}}
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-dark text-white">
+                <div class="card-body">
+                    <h6>Total Ideas</h6>
+                    <h2>{{ $totalIdeas }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-secondary text-white">
+                <div class="card-body">
+                    <h6>Draft</h6>
+                    <h2>{{ $draft }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-warning">
+                <div class="card-body">
+                    <h6>Voting</h6>
+                    <h2>{{ $voting }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success text-white">
+                <div class="card-body">
+                    <h6>Reviewed</h6>
+                    <h2>{{ $reviewed }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- PIPELINE --}}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-bold">
+            Innovation Pipeline
+        </div>
+        <div class="card-body">
+
+            <div class="progress" style="height:25px">
+
+                <div class="progress-bar bg-secondary"
+                    style="width: {{ $totalIdeas ? ($draft/$totalIdeas*100) : 0 }}%">
+                    Draft
+                </div>
+
+                <div class="progress-bar bg-warning"
+                    style="width: {{ $totalIdeas ? ($voting/$totalIdeas*100) : 0 }}%">
+                    Voting
+                </div>
+
+                <div class="progress-bar bg-success"
+                    style="width: {{ $totalIdeas ? ($reviewed/$totalIdeas*100) : 0 }}%">
+                    Reviewed
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    {{-- IDEAS TABLE --}}
+    <div class="card shadow-sm">
+        <div class="card-header fw-bold">
+            All Submitted Ideas
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Votes</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach($ideas as $idea)
+                        <tr>
+
+                            <td>
+                                <strong>{{ $idea->title }}</strong>
+                            </td>
+
+                            <td>
+                                <span class="badge
+                                    @if($idea->status=='draft') bg-secondary
+                                    @elseif($idea->status=='voting') bg-warning
+                                    @elseif($idea->status=='reviewed') bg-success
+                                    @else bg-dark @endif">
+                                    {{ ucfirst($idea->status) }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ $idea->votes_count }}
+                            </td>
+
+                            <td>
+                                {{ $idea->created_at->format('d M Y') }}
+                            </td>
+
+                        </tr>
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
 
 @endsection
